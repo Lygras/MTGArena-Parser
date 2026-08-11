@@ -1,0 +1,11 @@
+# Local environment
+.venv/
+.idea/
+__pycache__/
+
+# Parsed game data and generated outputs (personal — never commit)
+archive/
+report.txt
+report.txt.tmp
+forge_decks/
+scryfall_cache.json
