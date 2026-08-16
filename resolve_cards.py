@@ -3,6 +3,10 @@
 Results are cached to disk, so reruns cost no requests. Only the fields that
 actually carry card ids are scanned - other ints in the blobs are counters.
 
+Besides names, the cache stores per-format legalities and release dates for
+the coach layer (deck_health.py). Legality is volatile: after a ban
+announcement, rerun with --refresh or cached entries keep saying "legal".
+
 Scryfall publishes no official OpenAPI spec and blocks doc scraping; the
 sanctioned bulk alternative (default_cards, ~558MB) is only worth it if the
 unique id count runs to thousands. A typical few sessions is ~100 ids.
@@ -30,6 +34,9 @@ CARD_FIELDS = (
 # Scryfall asks for 50-100ms between requests.
 REQUEST_DELAY = 0.1
 USER_AGENT = "mtga-log-client-local/0.1 (personal log analysis)"
+
+# Formats the coach reasons about; Scryfall's full legality map covers ~20.
+ARENA_FORMATS = ("standard", "alchemy", "historic", "timeless", "explorer", "brawl")
 
 
 def flatten_ids(value) -> list:
@@ -59,6 +66,7 @@ def fetch_name(arena_id: int) -> dict:
     )
     with urllib.request.urlopen(request, timeout=20) as response:
         card = json.load(response)
+    legalities = card.get("legalities") or {}
     return {
         "name": card.get("name"),
         "mana_cost": card.get("mana_cost"),
@@ -66,6 +74,8 @@ def fetch_name(arena_id: int) -> dict:
         "set": card.get("set"),
         "rarity": card.get("rarity"),
         "cmc": card.get("cmc"),
+        "released_at": card.get("released_at"),
+        "legalities": {f: legalities.get(f) for f in ARENA_FORMATS},
     }
 
 
@@ -73,14 +83,31 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--glob", default="archive/*/*.jsonl", help="Input JSONL glob")
     parser.add_argument("--cache", default="scryfall_cache.json", help="Cache file")
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Refetch every resolved entry. Legality is volatile — run this "
+        "after a ban announcement or the cache keeps saying 'legal'.",
+    )
     args = parser.parse_args()
 
     cache_path = pathlib.Path(args.cache)
     cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
 
     ids = collect_ids(args.glob)
-    missing = sorted(i for i in ids if str(i) not in cache)
-    print(f"{len(ids)} unique card ids, {len(cache)} cached, {len(missing)} to fetch")
+    new = sorted(i for i in ids if str(i) not in cache)
+    # Entries from before legality caching existed (or a forced refresh).
+    # 404-cached ids (name: null) are never retried either way.
+    stale = sorted(
+        int(k)
+        for k, v in cache.items()
+        if v.get("name") and (args.refresh or "legalities" not in v)
+    )
+    missing = new + stale
+    print(
+        f"{len(ids)} unique card ids, {len(cache)} cached, "
+        f"{len(new)} new, {len(stale)} stale -> {len(missing)} to fetch"
+    )
 
     failures = 0
     for index, arena_id in enumerate(missing, 1):

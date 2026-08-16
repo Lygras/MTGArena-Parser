@@ -1,0 +1,25 @@
+{
+  "updated": "2026-08-16",
+  "comment": "Arena event_name -> format / match_type (bo1 unless stated). VOLATILE DATA (DESIGN.md §3, §7): Arena adds and renames queues, so extend this file — never hardcode a mapping. deck_health.py lists event names this file cannot classify; add them here as they appear in your logs.",
+  "exact": {
+    "Ladder": {"format": "standard", "match_type": "bo1"},
+    "Traditional_Ladder": {"format": "standard", "match_type": "bo3"},
+    "Play": {"format": "standard", "match_type": "bo1"},
+    "Traditional_Play": {"format": "standard", "match_type": "bo3"},
+    "Alchemy_Ladder": {"format": "alchemy", "match_type": "bo1"},
+    "Traditional_Alchemy_Ladder": {"format": "alchemy", "match_type": "bo3"},
+    "Historic_Ladder": {"format": "historic", "match_type": "bo1"},
+    "Traditional_Historic_Ladder": {"format": "historic", "match_type": "bo3"},
+    "Timeless_Ladder": {"format": "timeless", "match_type": "bo1"},
+    "Traditional_Timeless_Ladder": {"format": "timeless", "match_type": "bo3"}
+  },
+  "substring": [
+    {"contains": "Traditional", "match_type": "bo3"},
+    {"contains": "Alchemy", "format": "alchemy"},
+    {"contains": "Historic", "format": "historic"},
+    {"contains": "Timeless", "format": "timeless"},
+    {"contains": "Explorer", "format": "explorer"},
+    {"contains": "Brawl", "format": "brawl"},
+    {"contains": "Standard", "format": "standard"}
+  ]
+}

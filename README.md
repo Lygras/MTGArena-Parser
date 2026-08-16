@@ -62,6 +62,21 @@ on Linux) to play your Arena decks against Forge's AI. DFC/adventure cards are
 written by front face (how Forge indexes them); unresolved Alchemy-only ids
 are skipped with a warning.
 
+### Deck health
+
+```bash
+./.venv/bin/python deck_health.py    # archetype winrates by format & date segment
+```
+
+Clusters your decklists into fuzzy archetypes (so stats survive tinkering),
+splits records per format, segments them at the dated bans/rotations in
+`regime_changes.json`, and prints Wilson-interval winrates — flagging decks
+that lost a card to a ban and where they still live. Append new B&R
+announcements to `regime_changes.json`, map new Arena queue names in
+`event_formats.json`, and rerun `resolve_cards.py --refresh` after bans so
+cached legalities stay honest. `synthetic_demo.py` builds a fixture archive in
+`demo/` to try it without real logs. The larger plan lives in `DESIGN.md`.
+
 Set `MTGA_LOG_DIR` to override the log location. On Windows the logs live at
 `%USERPROFILE%\AppData\LocalLow\Wizards Of The Coast\MTGA\`, reachable from WSL
 under `/mnt/c/...`. `Player-prev.log` holds the previous session.

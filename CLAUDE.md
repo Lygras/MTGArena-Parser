@@ -22,9 +22,11 @@ not system python. Individual pipeline steps:
 
 ```bash
 ./.venv/bin/python local_parse.py <Player.log> -o archive/<dir>   # log -> JSONL per event type
-./.venv/bin/python resolve_cards.py                               # grpIds -> names via Scryfall, cached
+./.venv/bin/python resolve_cards.py                               # grpIds -> names+legalities via Scryfall, cached
 ./.venv/bin/python report.py > report.txt                         # readable game summaries
 ./.venv/bin/python forge_export.py                                # unique decklists -> forge_decks/*.dck
+./.venv/bin/python deck_health.py                                 # archetype winrates by format/segment, ban flags
+./.venv/bin/python synthetic_demo.py                              # fixture archive for deck_health -> demo/
 ```
 
 ## External dependency
@@ -70,6 +72,20 @@ Pipeline with the filesystem as the interface between stages:
 `game_result` is the richest event type (opening hand, draws, mulligans,
 opponent's revealed cards, full decklist, rank). Others: `deck_submission`,
 `joined_event`, `ongoing_events`, `player_progress`, `rank`, `user`.
+
+## Coach layer (in progress — see DESIGN.md)
+
+`DESIGN.md` is the spec; phases 0–1 are built. Core rule: volatile facts live
+in **dated JSON data files**, never in code — `event_formats.json` (Arena
+event name → format/match type) and `regime_changes.json` (ban/rotation dates
+per format, appended from B&R announcements). `coachlib.py` holds the
+stationary logic (snapshot dedupe, fuzzy archetype clustering, Wilson
+intervals, date segmentation); `deck_health.py` is the CLI on top.
+`resolve_cards.py` caches per-format legalities — legality goes stale on every
+ban, so rerun it with `--refresh` after announcements. `synthetic_demo.py`
+regenerates the acceptance fixture (DESIGN.md §6) into `demo/` (gitignored);
+run `deck_health.py` against it with `--games/--decks/--cache` pointed there
+after changing any coach code. Scripts are stdlib-only.
 
 ## Environment variables
 
