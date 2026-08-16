@@ -99,6 +99,10 @@ def main():
         if game["_flag"]:
             excluded.append(game)
             continue
+        if game["_ctx"]["format"] == "unknown":
+            # Quarantine (DESIGN.md §7): an unclassified queue must not print
+            # as a per-format winrate. Surfaced in the warning at the bottom.
+            continue
         cluster["by_format"][game["_ctx"]["format"]].append(game)
 
     print("DECK HEALTH — your logged games only. Every line names the population it")
@@ -160,7 +164,9 @@ def main():
                 if legality(i, fmt) in ("banned", "not_legal")
             ]
             for arena_id, status in dead:
-                copies = cluster["anchor"].get(arena_id, "?")
+                # Max across variants: the anchor is only the first-seeded
+                # list and can miss cards carried by later-joined members.
+                copies = max(m.count(arena_id) for m in cluster["members"])
                 print(
                     f"    ✗ {fmt}: lost {copies}x {name_of(arena_id)} ({status}) — "
                     f"pre-change results describe a deck that no longer exists"
@@ -169,11 +175,15 @@ def main():
                 for alt_fmt, alt_games in sorted(
                     cluster["by_format"].items(), key=lambda kv: -len(kv[1])
                 ):
-                    # "unknown" is a quarantine bucket, not a queueable format,
-                    # and legality there is unknowable — never suggest it.
-                    if alt_fmt in (fmt, "unknown") or any(
-                        legality(i, alt_fmt) in ("banned", "not_legal")
-                        for i in cluster["cards"]
+                    # Legality per list variant, not the union of all of them:
+                    # one non-portable card in one tinkered variant must not
+                    # veto the archetype if some registered 60 is fully legal.
+                    if alt_fmt == fmt or not any(
+                        all(
+                            legality(i, alt_fmt) not in ("banned", "not_legal")
+                            for i in set(member)
+                        )
+                        for member in cluster["members"]
                     ):
                         continue
                     wins = sum(1 for g in alt_games if g.get("won"))

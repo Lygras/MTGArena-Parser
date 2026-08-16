@@ -114,9 +114,17 @@ def main() -> None:
         try:
             cache[str(arena_id)] = fetch_name(arena_id)
         except urllib.error.HTTPError as error:
-            # 404 = Arena-only object (token, emblem, Alchemy rebalance) that
-            # Scryfall does not index under this arena_id. Record and move on.
-            cache[str(arena_id)] = {"name": None, "error": error.code}
+            if error.code == 404:
+                # 404 = Arena-only object (token, emblem, Alchemy rebalance) that
+                # Scryfall does not index under this arena_id. Record and move on.
+                cache[str(arena_id)] = {"name": None, "error": error.code}
+            else:
+                # Transient (429/5xx). A --refresh feeds resolved entries through
+                # here — never overwrite one; unresolved ids retry next run.
+                print(f"  ! HTTP {error.code} on {arena_id}, keeping cached entry")
+            failures += 1
+        except urllib.error.URLError as error:
+            print(f"  ! network error on {arena_id} ({error.reason}), keeping cached entry")
             failures += 1
         if index % 25 == 0 or index == len(missing):
             print(f"  {index}/{len(missing)}")

@@ -7,8 +7,8 @@ regime_changes.json); filler cards carry obviously fake "Demo ..." names so
 synthetic output can never be mistaken for real data. Deterministic: no
 randomness, no network.
 
-    python3 synthetic_demo.py
-    python3 deck_health.py --games 'demo/archive/*/game_result.jsonl' \
+    ./.venv/bin/python synthetic_demo.py
+    ./.venv/bin/python deck_health.py --games 'demo/archive/*/game_result.jsonl' \
         --decks 'demo/archive/*/deck_submission.jsonl' --cache demo/scryfall_cache.json
 
 Expected: Izzet Thunder strong pre-ban in Standard, collapsed after, still
@@ -148,7 +148,7 @@ def main():
         json.dumps(cache, indent=1, sort_keys=True), encoding="utf8"
     )
     print(f"{len(games)} games across {len(snapshots)} overlapping snapshots -> {OUT}/")
-    print("Now run:\n  python3 deck_health.py"
+    print("Now run:\n  ./.venv/bin/python deck_health.py"
           " --games 'demo/archive/*/game_result.jsonl'"
           " --decks 'demo/archive/*/deck_submission.jsonl'"
           " --cache demo/scryfall_cache.json")

@@ -1,6 +1,6 @@
 {
   "updated": "2026-08-16",
-  "comment": "Arena event_name -> format / match_type (bo1 unless stated). VOLATILE DATA (DESIGN.md §3, §7): Arena adds and renames queues, so extend this file — never hardcode a mapping. deck_health.py lists event names this file cannot classify; add them here as they appear in your logs.",
+  "comment": "Arena event_name -> format / match_type (bo1 unless stated). VOLATILE DATA (DESIGN.md §3, §7): Arena adds and renames queues, so extend this file — never hardcode a mapping. deck_health.py lists event names this file cannot classify; add them here as they appear in your logs. Substring rules are LAST-match-wins: keep general names (Standard) above specific ones so e.g. Standard_Brawl resolves to brawl, not standard.",
   "exact": {
     "Ladder": {"format": "standard", "match_type": "bo1"},
     "Traditional_Ladder": {"format": "standard", "match_type": "bo3"},
@@ -15,11 +15,11 @@
   },
   "substring": [
     {"contains": "Traditional", "match_type": "bo3"},
+    {"contains": "Standard", "format": "standard"},
     {"contains": "Alchemy", "format": "alchemy"},
     {"contains": "Historic", "format": "historic"},
     {"contains": "Timeless", "format": "timeless"},
     {"contains": "Explorer", "format": "explorer"},
-    {"contains": "Brawl", "format": "brawl"},
-    {"contains": "Standard", "format": "standard"}
+    {"contains": "Brawl", "format": "brawl"}
   ]
 }
