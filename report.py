@@ -1,8 +1,9 @@
 """Print readable game summaries and decklists using the Scryfall name cache."""
 
 import collections
-import glob
 import json
+
+import coachlib
 
 CACHE = json.load(open("scryfall_cache.json", encoding="utf8"))
 
@@ -20,15 +21,7 @@ def decklist(card_ids) -> str:
 
 # Snapshots overlap: a growing Player.log is re-archived, and yesterday's
 # games reappear in it. Later snapshots win (sorted dir names are chronological).
-games_by_key = {}
-for path in sorted(glob.glob("archive/*/game_result.jsonl")):
-    for line in open(path, encoding="utf8"):
-        if line.strip():
-            game = json.loads(line)
-            key = (game.get("match_id") or game.get("utc_time"), game.get("game_number"))
-            games_by_key[key] = game
-
-games = sorted(games_by_key.values(), key=lambda g: g.get("time", ""))
+games = coachlib.load_games("archive/*/game_result.jsonl")
 
 for game in games:
     result = "WON " if game.get("won") else "LOST"

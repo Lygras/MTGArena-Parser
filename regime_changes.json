@@ -1,0 +1,14 @@
+{
+  "updated": "2026-08-16",
+  "comment": "Dated regime boundaries per format (DESIGN.md §6). VOLATILE DATA: append entries from official B&R announcements; deck_health.py segments winrates at these dates because pre-change games describe a different world. 'date' is the Arena-effective date; 'cards' are exact Scryfall names (front face).",
+  "changes": [
+    {
+      "date": "2026-08-10",
+      "format": "standard",
+      "kind": "ban",
+      "cards": ["Badgermole Cub", "Gran-Gran", "Stormchaser's Talent"],
+      "note": "B&R Aug 10 2026 — aimed at Izzet/Jeskai Lessons; too much utility on one-mana cards.",
+      "source": "https://magic.wizards.com/en/news/announcements/banned-and-restricted-august-10-2026"
+    }
+  ]
+}
